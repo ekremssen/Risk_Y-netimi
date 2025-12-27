@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<title>Risk Yönetimi · Etkileşimli Eğitim</title>
+<title>Risk Yönetimi · Etkileşimli Profil</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
@@ -14,25 +14,24 @@ body{
 }
 .container{max-width:900px;margin:40px auto;padding:20px}
 h1{text-align:center}
-.subtitle{text-align:center;opacity:.7;margin-bottom:30px}
+.subtitle{text-align:center;opacity:.75;margin-bottom:30px}
 
 select{
   padding:12px;
-  border-radius:10px;
+  border-radius:12px;
   border:none;
-  font-size:15px;
+  font-size:16px;
+  width:100%;
+  margin-bottom:20px;
 }
 
 .card{
   background:rgba(255,255,255,.06);
   border-radius:18px;
   padding:24px;
-  margin-top:20px;
+  margin-bottom:20px;
 }
 
-.question{
-  margin-bottom:28px;
-}
 .meta{
   font-size:12px;
   opacity:.7;
@@ -42,7 +41,7 @@ select{
 .opt{
   margin-top:8px;
   padding:12px;
-  border-radius:10px;
+  border-radius:12px;
   background:rgba(255,255,255,.05);
   cursor:pointer;
 }
@@ -55,7 +54,7 @@ select{
   background:#020617;
   border-radius:10px;
   overflow:hidden;
-  margin:20px 0;
+  margin-bottom:20px;
 }
 .bar{
   height:100%;
@@ -64,18 +63,17 @@ select{
 }
 
 .result{
-  background:rgba(255,255,255,.08);
-  padding:24px;
-  border-radius:18px;
-  margin-top:30px;
-  display:none;
+  background:linear-gradient(135deg,#1e293b,#020617);
+  padding:30px;
+  border-radius:22px;
+  margin-top:40px;
 }
 
 button{
   margin-top:10px;
   padding:10px 16px;
   border:none;
-  border-radius:12px;
+  border-radius:14px;
   background:linear-gradient(135deg,#22c55e,#3b82f6);
   color:#fff;
   cursor:pointer;
@@ -92,247 +90,86 @@ footer{
 
 <body>
 <div class="container">
-  <h1>Risk Yönetimi · Etkileşimli Eğitim</h1>
-  <div class="subtitle">Bu bir sınav değil. Yanlış yaparak öğrenme deneyimi.</div>
-
-  <select id="profileSelect">
-    <option value="">Profil Seç</option>
-    <option value="Temel">Temel</option>
-    <option value="ISO">ISO / ERM</option>
-    <option value="Proje">Proje</option>
-    <option value="İnsan">İnsan</option>
-    <option value="Senaryo">Senaryo</option>
-  </select>
-
-  <div class="progress">
-    <div id="bar" class="bar"></div>
+  <h1>Risk Yönetimi · Etkileşimli Profil</h1>
+  <div class="subtitle">
+    Bu bir sınav değil. Bu senin risk bakış açını anlatan etkileşimli bir CV.
   </div>
 
-  <div id="questions"></div>
+  <select id="profileSelect">
+    <option value="">Profilini Seç</option>
+    <option value="Temel">Temel Risk Bakışı</option>
+    <option value="ISO">ISO / ERM Yaklaşımı</option>
+    <option value="Proje">Proje Odaklı Risk</option>
+    <option value="İnsan">İnsan & Kültür</option>
+    <option value="Senaryo">Senaryo & Karar</option>
+  </select>
 
-  <div id="finalResult" class="result"></div>
+  <div class="progress"><div id="bar" class="bar"></div></div>
+
+  <div id="questions"></div>
+  <div id="finalResult" class="result" style="display:none"></div>
 
   <footer>
-    © 2025 · Risk Yönetimi Etkileşimli Eğitim  
+    © 2025 · Risk Yönetimi Etkileşimli Profil  
     <br>Hazırlayan: Ekrem Şen
   </footer>
 </div>
 
 <script>
-
-
+/* ====== DATA ====== */
 const QUESTIONS = [
 {
-  profile:"Temel",
-  level:"Kolay",
-  type:"Tanım",
-  q:"Risk en doğru şekilde nasıl tanımlanır?",
-  o:[
-    "Kesin gerçekleşecek olumsuz olay",
-    "Olasılık ve etkinin birlikte değerlendirilmesi",
-    "Sadece finansal kayıp",
-    "Teknik sistem arızası"
-  ],
-  a:1,
-  e:"Risk; belirsizlik içeren ve olasılık ile etki bileşenleri birlikte değerlendirilen bir kavramdır."
-},
-{
-  profile:"Temel",
-  level:"Kolay",
-  type:"Tanım",
-  q:"Aşağıdakilerden hangisi riskin temel bileşenlerinden biridir?",
-  o:[
-    "Zaman",
-    "Bütçe",
-    "Olasılık",
-    "Dokümantasyon"
-  ],
-  a:2,
-  e:"Risk değerlendirmesinde olasılık temel bileşenlerden biridir."
-},
-{
-  profile:"Temel",
-  level:"Kolay",
-  type:"Kavramsal",
+  profile:"Proje",
   q:"Risk ile problem arasındaki temel fark nedir?",
-  o:[
-    "Risk geleceğe yöneliktir",
-    "Risk geçmişte yaşanmıştır",
-    "Problem yönetilemez",
-    "Risk sadece projelerde olur"
-  ],
+  o:["Risk geleceğe aittir","Risk sadece projedir","Problem yönetilemez","Risk negatiftir"],
   a:0,
-  e:"Risk henüz gerçekleşmemiştir, problem ise gerçekleşmiş durumdur."
-},
-{
-  profile:"Temel",
-  level:"Orta",
-  type:"Kavramsal",
-  q:"Risk yönetiminin temel amacı aşağıdakilerden hangisidir?",
-  o:[
-    "Tüm riskleri ortadan kaldırmak",
-    "Riskleri görmezden gelmek",
-    "Belirsizliği yönetilebilir hale getirmek",
-    "Sadece raporlama yapmak"
-  ],
-  a:2,
-  e:"Risk yönetimi belirsizliği tamamen yok etmez, yönetilebilir hale getirir."
-},
-{
-  profile:"Temel",
-  level:"Orta",
-  type:"Karar",
-  q:"Bir risk gerçekleştiğinde artık hangi kavrama dönüşür?",
-  o:[
-    "Fırsat",
-    "Tehdit",
-    "Problem",
-    "Kontrol"
-  ],
-  a:2,
-  e:"Gerçekleşen risk artık bir problemdir."
-},
-
-  {
-  profile:"ISO",
-  level:"Kolay",
-  type:"Tanım",
-  q:"ISO 31000 standardı neyi tanımlar?",
-  o:[
-    "Denetim süreçlerini",
-    "Risk yönetimi prensiplerini",
-    "Bilgi güvenliği kontrollerini",
-    "Sertifikasyon şartlarını"
-  ],
-  a:1,
-  e:"ISO 31000, risk yönetimi için prensipler ve çerçeve sunar."
-},
-{
-  profile:"ISO",
-  level:"Orta",
-  type:"Kavramsal",
-  q:"ISO 31000 aşağıdakilerden hangisini zorunlu kılar?",
-  o:[
-    "Belgelendirme",
-    "Denetim",
-    "Sürekli iyileştirme yaklaşımı",
-    "Teknoloji yatırımı"
-  ],
-  a:2,
-  e:"ISO 31000 sürekli iyileştirme prensibini benimser."
-},
-{
-  profile:"ISO",
-  level:"Orta",
-  type:"Karar",
-  q:"ISO 31000’e göre risk yönetimi hangi seviyede ele alınmalıdır?",
-  o:[
-    "Sadece operasyonel",
-    "Sadece proje",
-    "Kurumsal ve entegre",
-    "Sadece IT"
-  ],
-  a:2,
-  e:"ISO 31000 risk yönetiminin kurumsal ve entegre olmasını önerir."
-},
-
-  {
-  profile:"Proje",
-  level:"Kolay",
-  type:"Tanım",
-  q:"Proje riskleri en çok hangi aşamada belirlenmelidir?",
-  o:[
-    "Kapanış",
-    "Gerçekleştiğinde",
-    "Planlama",
-    "Teslim sonrası"
-  ],
-  a:2,
-  e:"Riskler en etkili şekilde planlama aşamasında yönetilir."
+  e:"Risk henüz gerçekleşmemiştir; problem gerçekleşmiş durumdur."
 },
 {
   profile:"Proje",
-  level:"Orta",
-  type:"Karar",
-  q:"Bir proje riskinin sahibi kim olmalıdır?",
-  o:[
-    "Kimse",
-    "Proje sponsoru",
-    "Net olarak atanmış sorumlu",
-    "Yönetim"
-  ],
+  q:"Bir proje riskinin en doğru yönetim yaklaşımı hangisidir?",
+  o:["Göz ardı etmek","Gerçekleşince çözmek","Önceden analiz etmek","Sorumlu atamamak"],
   a:2,
-  e:"Her risk için net bir risk sahibi atanmalıdır."
-},
-
-  {
-  profile:"İnsan",
-  level:"Orta",
-  type:"Davranış",
-  q:"İnsan kaynaklı risklerin yönetimi neden zordur?",
-  o:[
-    "Teknik bilgi eksikliği",
-    "Davranışların öngörülemez olması",
-    "Bütçe yetersizliği",
-    "Süreç fazlalığı"
-  ],
-  a:1,
-  e:"İnsan davranışları öngörülemez olduğu için risklidir."
-},
-{
-  profile:"İnsan",
-  level:"Zor",
-  type:"Kültür",
-  q:"Kurumsal kültür ile risk yönetimi arasındaki ilişki nedir?",
-  o:[
-    "İlişkisizdir",
-    "Dolaylıdır",
-    "Doğrudan etkilidir",
-    "Sadece İK’yı ilgilendirir"
-  ],
-  a:2,
-  e:"Risk farkındalığı doğrudan kurumsal kültürle ilişkilidir."
-},
-
-  {
-  profile:"Senaryo",
-  level:"Zor",
-  type:"Senaryo",
-  q:"Kritik bir tedarikçinin iflas etmesi hangi risk türüne girer?",
-  o:[
-    "Finansal",
-    "Operasyonel",
-    "Stratejik",
-    "Uyum"
-  ],
-  a:1,
-  e:"Tedarikçi kaybı operasyonel sürekliliği etkiler."
-},
-{
-  profile:"Senaryo",
-  level:"Zor",
-  type:"Senaryo",
-  q:"Regülasyon değişikliği sonrası ürünün durdurulması hangi risk türüdür?",
-  o:[
-    "Operasyonel",
-    "Finansal",
-    "Uyum",
-    "İnsan"
-  ],
-  a:2,
-  e:"Bu durum uyum (compliance) riskidir."
+  e:"Riskler gerçekleşmeden önce analiz edilmelidir."
 }
 ];
 
+/* ====== STATE ====== */
+let active=[];
+let answered=0;
+let correct=0;
+
+/* ====== VOICE ====== */
+function speak(text){
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang="tr-TR";
+  speechSynthesis.speak(u);
+}
+
+/* ====== PROFILE CHANGE ====== */
+document.getElementById("profileSelect").onchange=e=>{
+  const p=e.target.value;
+  if(!p) return;
+
+  active=QUESTIONS.filter(q=>q.profile===p);
+  answered=0; correct=0;
+
+  document.getElementById("questions").innerHTML="";
+  document.getElementById("finalResult").style.display="none";
+  updateProgress();
+  render();
+};
+
+/* ====== RENDER QUESTIONS ====== */
 function render(){
-  const qWrap=document.getElementById("questions");
-  qWrap.innerHTML="";
+  const wrap=document.getElementById("questions");
+  wrap.innerHTML="";
   active.forEach((q,i)=>{
-    const d=document.createElement("div");
-    d.className="card question";
-    d.innerHTML=`
-      <div class="meta">${q.profile}</div>
-      <h3>${i+1}. ${q.q}</h3>
+    const card=document.createElement("div");
+    card.className="card";
+    card.innerHTML=`
+      <div class="meta">${q.profile} · Soru ${i+1}</div>
+      <h3>${q.q}</h3>
     `;
     q.o.forEach((opt,ix)=>{
       const o=document.createElement("div");
@@ -342,38 +179,47 @@ function render(){
         if(o.classList.contains("answered")) return;
         o.classList.add("answered");
         answered++;
-        if(ix===q.a){correct++;o.classList.add("correct");speak("Doğru.");}
-        else{o.classList.add("wrong");speak("Yanlış.");}
-        d.insertAdjacentHTML("beforeend",`<div class="meta">${q.e}</div>`);
+        if(ix===q.a){correct++;o.classList.add("correct");speak("Doğru, iyi yakaladın.");}
+        else{o.classList.add("wrong");speak("Burada çoğu kişi yanılıyor.");}
+        card.insertAdjacentHTML("beforeend",`<div class="meta">${q.e}</div>`);
         updateProgress();
         if(answered===active.length) finish();
       };
-      d.appendChild(o);
+      card.appendChild(o);
     });
-    qWrap.appendChild(d);
+    wrap.appendChild(card);
   });
 }
 
+/* ====== PROGRESS ====== */
 function updateProgress(){
-  document.getElementById("bar").style.width=
-    Math.round((answered/active.length)*100)+"%";
+  document.getElementById("bar").style.width =
+    active.length ? Math.round((answered/active.length)*100)+"%" : "0%";
 }
 
+/* ====== FINAL PROFILE ====== */
 function finish(){
   const rate=Math.round((correct/active.length)*100);
-  let t="",v="";
-  if(rate<40){t="Temel farkındalık geliştirilmeli.";v="Bu alanda daha fazla pratik öneririm."}
-  else if(rate<70){t="Uygulama var ama karar alma geliştirilmeli.";v="Biraz daha senaryo çözmelisin."}
-  else{t="Bu profilde güçlü bir risk bakış açısı var.";v="Senior seviyeye yakın bir farkındalık."}
+  let text="",voice="";
+  if(rate<40){
+    text="Bu profil, risk farkındalığının gelişime açık olduğunu gösteriyor.";
+    voice="Bu alanda temel kavramlara tekrar dönmeni öneririm.";
+  }else if(rate<70){
+    text="Analitik bir yaklaşımın var, ancak karar tarafı güçlenmeli.";
+    voice="Biraz daha senaryo pratiği bu profili çok güçlendirir.";
+  }else{
+    text="Bu profil güçlü bir risk bakış açısına işaret ediyor.";
+    voice="Bu seviye, senior seviyeye yakın bir farkındalık gösterir.";
+  }
   const r=document.getElementById("finalResult");
   r.style.display="block";
   r.innerHTML=`
-    <h2>Genel Değerlendirme</h2>
-    <p>Başarı: %${rate}</p>
-    <p>${t}</p>
-    <button onclick="speak('${v}')">🔊 Sesli Dinle</button>
+    <h2>Senin Risk Profilin</h2>
+    <p><strong>Başarı:</strong> %${rate}</p>
+    <p>${text}</p>
+    <button onclick="speak('${voice}')">🔊 Sesli Dinle</button>
   `;
-  speak(v);
+  speak(voice);
 }
 </script>
 </body>
