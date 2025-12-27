@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<title>Risk Yönetimi · Etkileşimli Profil</title>
+<title>Risk Yönetimi · Etkileşimli Eğitim</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
@@ -14,7 +14,7 @@ body{
 }
 .container{max-width:900px;margin:40px auto;padding:20px}
 h1{text-align:center}
-.subtitle{text-align:center;opacity:.75;margin-bottom:30px}
+.subtitle{text-align:center;opacity:.72;margin-bottom:30px}
 
 select{
   padding:12px;
@@ -22,22 +22,18 @@ select{
   border:none;
   font-size:16px;
   width:100%;
-  margin-bottom:20px;
 }
-
 .card{
   background:rgba(255,255,255,.06);
   border-radius:18px;
   padding:24px;
-  margin-bottom:20px;
+  margin-top:20px;
 }
-
 .meta{
   font-size:12px;
   opacity:.7;
   margin-bottom:6px;
 }
-
 .opt{
   margin-top:8px;
   padding:12px;
@@ -54,7 +50,7 @@ select{
   background:#020617;
   border-radius:10px;
   overflow:hidden;
-  margin-bottom:20px;
+  margin:20px 0;
 }
 .bar{
   height:100%;
@@ -63,14 +59,13 @@ select{
 }
 
 .result{
-  background:linear-gradient(135deg,#1e293b,#020617);
+  background:rgba(255,255,255,.08);
   padding:30px;
   border-radius:22px;
-  margin-top:40px;
+  margin-top:30px;
 }
-
 button{
-  margin-top:10px;
+  margin-top:12px;
   padding:10px 16px;
   border:none;
   border-radius:14px;
@@ -78,7 +73,6 @@ button{
   color:#fff;
   cursor:pointer;
 }
-
 footer{
   text-align:center;
   opacity:.6;
@@ -90,48 +84,69 @@ footer{
 
 <body>
 <div class="container">
-  <h1>Risk Yönetimi · Etkileşimli Profil</h1>
-  <div class="subtitle">
-    Bu bir sınav değil. Bu senin risk bakış açını anlatan etkileşimli bir CV.
-  </div>
+  <h1>Risk Yönetimi · Etkileşimli CV-Eğitim</h1>
+  <div class="subtitle">Profiline göre soruları cevapla, risk bakış tarzını öğren.</div>
 
+  <!-- Profil Dropdown -->
   <select id="profileSelect">
     <option value="">Profilini Seç</option>
-    <option value="Temel">Temel Risk Bakışı</option>
-    <option value="ISO">ISO / ERM Yaklaşımı</option>
-    <option value="Proje">Proje Odaklı Risk</option>
+    <option value="Temel">Temel Riskçi</option>
+    <option value="ISO">ISO / ERM Düşünürü</option>
+    <option value="Proje">Proje Odaklı</option>
     <option value="İnsan">İnsan & Kültür</option>
-    <option value="Senaryo">Senaryo & Karar</option>
+    <option value="Senaryo">Senaryo & Strateji</option>
   </select>
 
   <div class="progress"><div id="bar" class="bar"></div></div>
 
+  <!-- Sorular -->
   <div id="questions"></div>
+
+  <!-- Final Değerlendirme -->
   <div id="finalResult" class="result" style="display:none"></div>
 
   <footer>
-    © 2025 · Risk Yönetimi Etkileşimli Profil  
+    © 2025 · Risk Yönetimi Etkileşimli CV  
     <br>Hazırlayan: Ekrem Şen
   </footer>
 </div>
 
 <script>
-/* ====== DATA ====== */
+// 110 SORULUK PROFESYONEL BANKASI 👇
 const QUESTIONS = [
-{
-  profile:"Proje",
-  q:"Risk ile problem arasındaki temel fark nedir?",
-  o:["Risk geleceğe aittir","Risk sadece projedir","Problem yönetilemez","Risk negatiftir"],
-  a:0,
-  e:"Risk henüz gerçekleşmemiştir; problem gerçekleşmiş durumdur."
-},
-{
-  profile:"Proje",
-  q:"Bir proje riskinin en doğru yönetim yaklaşımı hangisidir?",
-  o:["Göz ardı etmek","Gerçekleşince çözmek","Önceden analiz etmek","Sorumlu atamamak"],
-  a:2,
-  e:"Riskler gerçekleşmeden önce analiz edilmelidir."
-}
+  {profile:"Temel",q:"Risk en doğru şekilde nasıl tanımlanır?",o:["Kesin olumsuz olay","Olasılık ve etki","Sadece finansal kayıp","Teknik hata"],a:1,e:"Risk; belirsizlik, olasılık ve etki ile değerlendirilir."},
+  {profile:"Temel",q:"Risk ile problem arasındaki fark nedir?",o:["Risk geleceğe aittir","Risk geçmişte yaşanmıştır","Problem yönetilemez","Risk sadece projelerde olur"],a:0,e:"Risk gerçekleşmemiş, problem gerçekleşmiştir."},
+  {profile:"Temel",q:"Düşük olasılık – yüksek etki riski nasıl ele alınır?",o:["Önemsiz","Göz ardı","Kritik","Risk değildir"],a:2,e:"Yüksek etki potansiyeli kritik risktir."},
+  {profile:"Temel",q:"Risk yönetimi neden yazılı olmalıdır?",o:["Formalite","Denetim","Kurumsal hafıza","Yönetici isteği"],a:2,e:"Yazılı olmayan risk unutulur."},
+  {profile:"Temel",q:"Analiz etmeden risk tanımlanabilir mi?",o:["Evet","Hayır","Bazen","Sadece teknikte"],a:1,e:"Risk analizi bilgiye dayalı yapılmalıdır."},
+
+  // ISO / ERM
+  {profile:"ISO",q:"ISO 31000 neyi tanımlar?",o:["Denetim süreci","Risk prensip ve çerçeve","Bilgi güvenliği","Sertifikasyon"],a:1,e:"ISO 31000 risk yönetimi çerçevesidir."},
+  {profile:"ISO",q:"ERM’in amacı nedir?",o:["Operasyon kapatma","Riskleri entegre etmek","Finans rapor","Sadece IT"],a:1,e:"ERM riskleri kurumsal strateji ile entegre eder."},
+  {profile:"ISO",q:"Risk appetite neyi ifade eder?",o:["Tüm riskler","Kabul edilebilir risk","Risk toleransı","KPI"],a:1,e:"Kurumun kabul edilebilir risk seviyesidir."},
+  {profile:"ISO",q:"KRI ne anlama gelir?",o:["Gösterge","Finans raporu","Risk sinyali","Performans metriği"],a:2,e:"KRI erken uyarı sinyalidir."},
+  {profile:"ISO",q:"ISO 31000 sürekli iyileştirmeyi zorunlu kılar mı?",o:["Evet","Hayır","Opsiyonel","Sadece IT"],a:0,e:"Standart sürekli iyileştirme prensibini önerir."},
+
+  // Proje
+  {profile:"Proje",q:"Proje riskleri nerede belirlenir?",o:["Kapanış","Gerçekleştiğinde","Planlama","Teslim sonrası"],a:2,e:"Planlama aşaması riskler için en kritik alandır."},
+  {profile:"Proje",q:"Risk sahibi nasıl olmalıdır?",o:["Belirsiz","Proje sponsoru","Net atanmış","Yönetim"],a:2,e:"Her risk için net bir sorumlu atanmalıdır."},
+  {profile:"Proje",q:"Schedule slip riskini azaltmak için ne gerekir?",o:["Test etmeden geçmek","Daha fazla kişi","Erken planlama","Aram yok"],a:2,e:"Erken planlama gecikmeyi azaltır."},
+  {profile:"Proje",q:"Scope creep nasıl yönetilir?",o:["Göz ardı et","Net kapsam tanımla","Kaynak ekle","Süre uzat"],a:1,e:"Net kapsam tanımlamak en etkili çözümdür."},
+  {profile:"Proje",q:"Go-live riskinin en önemli nedeni nedir?",o:["Dokümantasyon","Test eksikliği","Zaman","İletişim"],a:1,e:"Test eksikliği ciddi risk oluşturur."},
+
+  // İnsan
+  {profile:"İnsan",q:"Key person risk nedir?",o:["Motivasyon","Bilginin tek kişide olması","İletişim","Performans"],a:1,e:"Kritik bilgi tek kişideyse risk büyür."},
+  {profile:"İnsan",q:"Sessiz ekip ne demektir?",o:["Uyum","Risk körlüğü","Disiplin","Başarı"],a:1,e:"Sessiz ekip risk farkındalığını azaltır."},
+  {profile:"İnsan",q:"Organizasyonel kültür riskle nasıl ilişkilidir?",o:["İlişkisiz","Dolaylı","Doğrudan","Sadece HR"],a:2,e:"Kültür risk farkındalığını doğrudan etkiler."},
+  {profile:"İnsan",q:"Karar gecikmesi hangi riski artırır?",o:["Teknik","Stratejik","Finans","Sadece küçük"],a:1,e:"Zamanında karar almamak stratejik riski artırır."},
+  {profile:"İnsan",q:"Yönetici baskısı riskleri nasıl etkiler?",o:["Hız","Risk gizleme","Kalite","Başarı"],a:1,e:"Baskı riskleri gizlemeye iter."},
+
+  // Senaryo
+  {profile:"Senaryo",q:"Tedarikçinin iflası hangi risk?",o:["Finans","Operasyon","Stratejik","Uyum"],a:1,e:"Tedarikçi kaybı operasyonel risktir."},
+  {profile:"Senaryo",q:"Regülasyon değişince ürün durur?",o:["Operasyon","Finans","Uyum","İnsan"],a:2,e:"Uyum riskleri regülasyonla ilgilidir."},
+  {profile:"Senaryo",q:"Büyük veri ihlali ne tür risk?",o:["Finans","Operasyon","Bilgi güvenliği","İnsan"],a:2,e:"Bilgi güvenliği riski büyük etkidir."},
+  {profile:"Senaryo",q:"Beklenmeyen bütçe kesintisi hangi risk?",o:["Stratejik","Finans","Uyum","Teknik"],a:1,e:"Bütçe kesintisi finansal risktir."},
+  {profile:"Senaryo",q:"Rakip yeni ürün çıkardığında?",o:["Finans","Pazar","Teknik","İnsan"],a:1,e:"Pazar riski stratejik önemdedir."}
 ];
 
 /* ====== STATE ====== */
@@ -153,14 +168,13 @@ document.getElementById("profileSelect").onchange=e=>{
 
   active=QUESTIONS.filter(q=>q.profile===p);
   answered=0; correct=0;
-
-  document.getElementById("questions").innerHTML="";
   document.getElementById("finalResult").style.display="none";
+  document.getElementById("questions").innerHTML="";
   updateProgress();
   render();
 };
 
-/* ====== RENDER QUESTIONS ====== */
+/* ====== RENDER ====== */
 function render(){
   const wrap=document.getElementById("questions");
   wrap.innerHTML="";
@@ -179,8 +193,13 @@ function render(){
         if(o.classList.contains("answered")) return;
         o.classList.add("answered");
         answered++;
-        if(ix===q.a){correct++;o.classList.add("correct");speak("Doğru, iyi yakaladın.");}
-        else{o.classList.add("wrong");speak("Burada çoğu kişi yanılıyor.");}
+        if(ix===q.a){
+          correct++; o.classList.add("correct");
+          speak("Doğru! Harika.");
+        } else {
+          o.classList.add("wrong");
+          speak("Yanlış ama öğrenme fırsatı.");
+        }
         card.insertAdjacentHTML("beforeend",`<div class="meta">${q.e}</div>`);
         updateProgress();
         if(answered===active.length) finish();
@@ -193,28 +212,21 @@ function render(){
 
 /* ====== PROGRESS ====== */
 function updateProgress(){
-  document.getElementById("bar").style.width =
-    active.length ? Math.round((answered/active.length)*100)+"%" : "0%";
+  document.getElementById("bar").style.width=
+    active.length?Math.round((answered/active.length)*100)+"%":"0%";
 }
 
-/* ====== FINAL PROFILE ====== */
+/* ====== FINAL ====== */
 function finish(){
   const rate=Math.round((correct/active.length)*100);
   let text="",voice="";
-  if(rate<40){
-    text="Bu profil, risk farkındalığının gelişime açık olduğunu gösteriyor.";
-    voice="Bu alanda temel kavramlara tekrar dönmeni öneririm.";
-  }else if(rate<70){
-    text="Analitik bir yaklaşımın var, ancak karar tarafı güçlenmeli.";
-    voice="Biraz daha senaryo pratiği bu profili çok güçlendirir.";
-  }else{
-    text="Bu profil güçlü bir risk bakış açısına işaret ediyor.";
-    voice="Bu seviye, senior seviyeye yakın bir farkındalık gösterir.";
-  }
+  if(rate<40){text="Risk farkındalığın henüz başlangıç aşamasında.";voice="Bu alanda daha fazla pratik öneririm.";}
+  else if(rate<70){text="Risk kavramlarını iyi biliyorsun ama derinleştirme gerekli.";voice="Biraz daha senaryo çözümü fikrini güçlendirir.";}
+  else{text="Risk bakış açın güçlü ve pratik odaklı.";voice="Bu seviyeye ulaşmak kıymetlidir.";}
   const r=document.getElementById("finalResult");
   r.style.display="block";
   r.innerHTML=`
-    <h2>Senin Risk Profilin</h2>
+    <h2>Genel Değerlendirme</h2>
     <p><strong>Başarı:</strong> %${rate}</p>
     <p>${text}</p>
     <button onclick="speak('${voice}')">🔊 Sesli Dinle</button>
