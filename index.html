@@ -2,306 +2,189 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<title>Risk Yönetimi Yetkinlik Analizi</title>
+<title>Risk Yönetimi · Etkileşimli Eğitim</title>
 
 <style>
-body {
-  font-family: Arial, sans-serif;
-  background:#0a0f1c;
-  color:#fff;
+body{
   margin:0;
-  padding:0;
+  font-family:Inter,Arial;
+  background:radial-gradient(circle at top,#0b1228,#060b18);
+  color:#fff;
 }
-.container {
-  max-width:800px;
-  margin:auto;
-  padding:20px;
+.container{max-width:1400px;margin:auto;padding:24px}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.stats span{margin-left:14px;font-weight:600}
+.controls{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+input,select,button{
+  background:#020617;color:#fff;
+  border:1px solid #1e293b;border-radius:12px;
+  padding:10px 14px
 }
-h1,h2 {
-  text-align:center;
+button{cursor:pointer}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(420px,1fr));
+  gap:20px
 }
-.question {
-  margin-top:30px;
+.card{
+  background:linear-gradient(180deg,#0f172a,#020617);
+  border:1px solid #1e293b;
+  border-radius:18px;padding:20px
 }
-.options label {
-  display:block;
-  margin:8px 0;
-  cursor:pointer;
+.tag{font-size:12px;color:#38bdf8}
+.option{display:block;margin:8px 0;cursor:pointer}
+.result{margin-top:10px;font-size:14px}
+.ok{color:#22c55e}
+.bad{color:#ef4444}
+.explain{margin-top:6px;color:#94a3b8}
+.report{
+  margin-top:40px;padding:24px;
+  border-radius:18px;
+  background:#020617;border:1px solid #1e293b
 }
-button {
-  margin-top:20px;
-  padding:10px 20px;
-  font-size:16px;
-  cursor:pointer;
-}
-.result {
-  margin-top:30px;
-  padding:20px;
-  background:#111;
-  border-radius:8px;
-}
-.level {
-  opacity:.7;
-  font-size:14px;
-  text-align:center;
-}
+footer{margin-top:40px;text-align:center;color:#94a3b8}
 </style>
 </head>
 
 <body>
 <div class="container">
 
-<h1>Risk Yönetimi Yetkinlik Analizi</h1>
-<p class="level">Senior Mentor Modu</p>
+<header>
+  <h1>Risk Yönetimi · Etkileşimli Eğitim</h1>
+  <div class="stats">
+    <span>Toplam: <b id="total"></b></span>
+    <span>Doğru: <b id="correct">0</b></span>
+    <span>Yanlış: <b id="wrong">0</b></span>
+    <span>Başarı: <b id="rate">0%</b></span>
+  </div>
+</header>
 
-<div id="quiz"></div>
-<button id="nextBtn">Sonraki</button>
-<div id="result"></div>
+<div class="controls">
+  <select id="level">
+    <option value="all">Tümü</option>
+    <option value="1">Temel</option>
+    <option value="2">ISO / ERM</option>
+    <option value="3">Proje</option>
+    <option value="4">İnsan</option>
+    <option value="5">Senaryo</option>
+  </select>
+  <input id="search" placeholder="Ara: KRI, appetite, vendor..." />
+  <button onclick="shuffle()">Karıştır</button>
+  <button onclick="resetAll()">Skoru Sıfırla</button>
+</div>
+
+<div class="grid" id="quiz"></div>
+<div id="report" class="report" style="display:none"></div>
+
+<footer>
+Senior Mentor Modu · Eğitim + Değerlendirme
+</footer>
 
 </div>
 
 <script>
 const questions = [
+/* ========= SEVİYE 1 – TEMEL ========= */
+{l:1,t:"Temel",q:"Risk en doğru nasıl tanımlanır?",o:["Kesin olumsuz olay","Olasılık ve etki birlikte","Sadece finansal kayıp","Teknik hata"],a:1,e:"Risk belirsizliktir. Olasılık ve etki birlikte düşünülür."},
+{l:1,t:"Temel",q:"Risk ile problem farkı nedir?",o:["Risk geleceğe aittir","Risk sadece projedir","Problem yönetilemez","Risk negatiftir"],a:0,e:"Problem gerçekleşmiştir, risk henüz gerçekleşmemiştir."},
+{l:1,t:"Temel",q:"Düşük olasılık–yüksek etki riski nasıl ele alınır?",o:["Önemsiz","Göz ardı","Kritik","Risk değildir"],a:2,e:"Gerçek hayatta en yıkıcı riskler bu gruptadır."},
+{l:1,t:"Temel",q:"Risk yönetimi hangi soruya cevap verir?",o:["Ne oldu","Neden oldu","Olursa ne olur","Kim yaptı"],a:2,e:"Risk yönetimi geleceğe bakar."},
+{l:1,t:"Temel",q:"Risk neden yazılı olmalıdır?",o:["Formalite","Denetim","Kurumsal hafıza","Yönetici için"],a:2,e:"Yazılmayan risk unutulur."},
 
-/* =========================
-   SEVİYE 1 – TEMEL (ÖRNEKLER)
-========================= */
+/* ========= SEVİYE 2 – ISO / ERM ========= */
+{l:2,t:"ISO 31000",q:"ISO 31000 nedir?",o:["Sertifika","Denetim standardı","Risk prensipleri","IT standardı"],a:2,e:"ISO 31000 sertifika değil, çerçevedir."},
+{l:2,t:"ERM",q:"Risk appetite neyi ifade eder?",o:["Maks zarar","Alınmak istenen risk","Risk toleransı","Toplam risk"],a:1,e:"Risk appetite stratejik bir karardır."},
+{l:2,t:"ERM",q:"Risk tolerance nedir?",o:["İştah","Operasyonel sınır","KPI","KRI"],a:1,e:"Tolerance kabul edilebilir sapma aralığıdır."},
+{l:2,t:"ERM",q:"KRI neyi ölçer?",o:["Performans","Risk sinyali","KPI","Hedef"],a:1,e:"KRI erken uyarı göstergesidir."},
+{l:2,t:"ERM",q:"COSO ERM amacı nedir?",o:["Denetim","Sertifika","Kurumsal risk entegrasyonu","IT güvenliği"],a:2,e:"COSO ERM riskleri kuruma entegre eder."},
 
-{
- level:1,
- q:"Risk en doğru şekilde nasıl tanımlanır?",
- o:[
-  "Olumsuz olayın kesinleşmesi",
-  "Olasılık ve etkinin birlikte değerlendirilmesi",
-  "Sadece finansal kayıp",
-  "Teknik hata"
- ],
- a:1
-},
-{
- level:1,
- q:"Risk ile problem arasındaki temel fark nedir?",
- o:[
-  "Risk geleceğe, problem geçmişe aittir",
-  "Risk sadece projelerde olur",
-  "Problem yönetilemez",
-  "Risk sadece negatiftir"
- ],
- a:0
-},
-{
- level:1,
- q:"Düşük olasılık – yüksek etki riski nasıl ele alınmalıdır?",
- o:[
-  "Önemsizdir",
-  "Göz ardı edilir",
-  "Kritik risk olarak ele alınır",
-  "Risk değildir"
- ],
- a:2
-},
-{
- level:1,
- q:"Risk yönetimi hangi soruya cevap verir?",
- o:[
-  "Ne oldu?",
-  "Neden oldu?",
-  "Olursa ne olur?",
-  "Kim yaptı?"
- ],
- a:2
-},
+/* ========= SEVİYE 3 – PROJE ========= */
+{l:3,t:"Proje",q:"Scope creep nedir?",o:["Teknik hata","Kapsamın kontrolsüz büyümesi","Kaynak eksikliği","Zaman baskısı"],a:1,e:"Scope creep projeleri sessizce bitirir."},
+{l:3,t:"Proje",q:"Vendor lock-in ne anlama gelir?",o:["Teknik borç","Tedarikçiye bağımlılık","İnsan riski","Regülasyon"],a:1,e:"Alternatif yoksa risk vardır."},
+{l:3,t:"Proje",q:"Go-live risklerinin temel nedeni nedir?",o:["Doküman","Test eksikliği","Sunum","İletişim"],a:1,e:"Test edilmemiş sistem sürpriz üretir."},
+{l:3,t:"Proje",q:"Teknik borç hangi riski artırır?",o:["Kısa vadeli","Uzun vadeli","Finansal","İtibar"],a:1,e:"Borç zamanla faize dönüşür."},
+{l:3,t:"Proje",q:"Regülasyon belirsizliği ne doğurur?",o:["Hız","Stratejik risk","Performans","KPI"],a:1,e:"Belirsizlik yönetilmezse ceza gelir."},
 
-/* =========================
-   SEVİYE 2 – FRAMEWORK
-========================= */
+/* ========= SEVİYE 4 – İNSAN ========= */
+{l:4,t:"İnsan",q:"Key person risk nedir?",o:["Motivasyon","Bilginin tek kişide olması","İletişim","Performans"],a:1,e:"Tek kişiye bağlı bilgi büyük risktir."},
+{l:4,t:"İnsan",q:"Sessiz ekip neyin göstergesidir?",o:["Uyum","Risk körlüğü","Başarı","Disiplin"],a:1,e:"Kimse konuşmuyorsa risk büyür."},
+{l:4,t:"İnsan",q:"Karar gecikmesi hangi riski artırır?",o:["Operasyonel","Stratejik","Finansal","Teknik"],a:1,e:"Zamanında karar alınmazsa fırsat kaçar."},
+{l:4,t:"İnsan",q:"Yönetici baskısı ne doğurur?",o:["Hız","Kalite","Gizlenen risk","Başarı"],a:2,e:"Baskı riskleri görünmez yapar."},
+{l:4,t:"İnsan",q:"Kültürel risk nedir?",o:["İnsan","Teknik","Davranışsal","Finans"],a:2,e:"Kültür riskleri sessizdir."},
 
-{
- level:2,
- q:"ISO 31000 aşağıdakilerden hangisidir?",
- o:[
-  "Sertifika standardı",
-  "Denetim zorunluluğu",
-  "Risk yönetimi prensip ve çerçevesi",
-  "Sadece IT riskleri için"
- ],
- a:2
-},
-{
- level:2,
- q:"Risk appetite neyi ifade eder?",
- o:[
-  "Maksimum zarar",
-  "Kurumun almaya istekli olduğu risk seviyesi",
-  "Tüm risklerin toplamı",
-  "Risk toleransı ile aynıdır"
- ],
- a:1
-},
-{
- level:2,
- q:"Risk appetite – risk tolerance farkı nedir?",
- o:[
-  "Aynıdır",
-  "Appetite stratejik, tolerance operasyoneldir",
-  "Tolerance daha geniştir",
-  "Appetite ölçülemez"
- ],
- a:1
-},
+/* ========= SEVİYE 5 – SENARYO ========= */
+{l:5,t:"Senaryo",q:"Belirsiz regülasyonda en doğru yaklaşım?",o:["Beklemek","Görmezden gelmek","Senaryo analizi","İptal"],a:2,e:"Senaryo düşünmek yönetimi rahatlatır."},
+{l:5,t:"Senaryo",q:"Yönetim riskleri küçümsüyorsa?",o:["Cesaret","Risk körlüğü","Liderlik","Başarı"],a:1,e:"Bu ciddi bir kültürel risktir."},
+{l:5,t:"Senaryo",q:"Bir risk gerçekleştiyse artık?",o:["Risk","Problem","Fırsat","KPI"],a:1,e:"Artık problem yönetimidir."},
+{l:5,t:"Senaryo",q:"En tehlikeli risk hangisidir?",o:["Bilinmeyen","Konuşulmayan","Finansal","Teknik"],a:1,e:"Konuşulmayan risk öldürür."},
+{l:5,t:"Senaryo",q:"Risk lideri bakış açısı nedir?",o:["Sıfır risk","Cesaret","Dengeli karar","Hız"],a:2,e:"Risk almak ama bilinçli almak."
+}
+];
 
-/* =========================
-   SEVİYE 3 – PROJE & ÜRÜN
-========================= */
+let correct=0, wrong=0, answered={};
+const quiz=document.getElementById("quiz");
 
-{
- level:3,
- q:"Scope creep hangi risk türüdür?",
- o:[
-  "Teknik",
-  "Finansal",
-  "Proje riski",
-  "İnsan riski"
- ],
- a:2
-},
-{
- level:3,
- q:"Vendor lock-in neyi ifade eder?",
- o:[
-  "Teknik borç",
-  "Tedarikçiye bağımlılık riski",
-  "Regülasyon riski",
-  "İnsan riski"
- ],
- a:1
-},
-{
- level:3,
- q:"Go-live aşamasındaki en büyük risk nedir?",
- o:[
-  "Dokümantasyon",
-  "Zaman baskısı",
-  "Test eksikliği",
-  "Tüm cevaplar"
- ],
- a:3
-},
+function render(){
+ quiz.innerHTML="";
+ const lv=document.getElementById("level").value;
+ const s=document.getElementById("search").value.toLowerCase();
 
-/* =========================
-   SEVİYE 4 – İNSAN & ORG.
-========================= */
-
-{
- level:4,
- q:"Key person risk nedir?",
- o:[
-  "Yönetici baskısı",
-  "Bilginin tek kişide olması",
-  "Performans düşüklüğü",
-  "İletişim problemi"
- ],
- a:1
-},
-{
- level:4,
- q:"Karar gecikmesi hangi riski doğurur?",
- o:[
-  "Operasyonel",
-  "Teknik",
-  "Stratejik",
-  "Finansal"
- ],
- a:2
-},
-{
- level:4,
- q:"Sessiz ekipler hangi riski büyütür?",
- o:[
-  "Finansal",
-  "İletişim ve erken uyarı riski",
-  "Teknik",
-  "Regülasyon"
- ],
- a:1
-},
-
-/* =========================
-   SEVİYE 5 – SENARYO
-========================= */
-
-{
- level:5,
- q:"Regülasyonu belirsiz bir projede en doğru yaklaşım nedir?",
- o:[
-  "Beklemek",
-  "Görmezden gelmek",
-  "Senaryo bazlı analiz yapmak",
-  "Projeyi iptal etmek"
- ],
- a:2
-},
-{
- level:5,
- q:"Yönetimin riskleri sürekli küçümsemesi neyi gösterir?",
- o:[
-  "Yüksek risk iştahı",
-  "Risk körlüğü",
-  "Güçlü liderlik",
-  "Olgun risk kültürü"
- ],
- a:1
+ questions.filter(x=>{
+   return (lv==="all"||x.l==lv) &&
+          (x.q.toLowerCase().includes(s)||x.t.toLowerCase().includes(s));
+ }).forEach((q,i)=>{
+   const c=document.createElement("div");
+   c.className="card";
+   c.innerHTML=`
+     <span class="tag">${q.t}</span>
+     <h3>${q.q}</h3>
+     ${q.o.map((o,ix)=>`
+       <label class="option">
+         <input type="radio" name="q${i}" value="${ix}"> ${o}
+       </label>`).join("")}
+     <button>Yanıtla</button>
+     <div class="result"></div>
+   `;
+   const btn=c.querySelector("button");
+   const res=c.querySelector(".result");
+   btn.onclick=()=>{
+     if(answered[i])return;
+     const sel=c.querySelector("input:checked");
+     if(!sel)return;
+     answered[i]=true;
+     if(+sel.value===q.a){correct++;res.innerHTML=`<span class="ok">✔ Doğru</span><div class="explain">${q.e}</div>`;}
+     else{wrong++;res.innerHTML=`<span class="bad">✖ Yanlış</span><div class="explain">${q.e}</div>`;}
+     update();
+   };
+   quiz.appendChild(c);
+ });
+ document.getElementById("total").innerText=questions.length;
 }
 
-]; // AYNI FORMATLA 110 SORUYA KADAR EKLENİR
-
-let i=0, score=0;
-
-const quiz = document.getElementById("quiz");
-const btn = document.getElementById("nextBtn");
-
-load();
-
-function load(){
- const q = questions[i];
- quiz.innerHTML = `
- <div class="question">
- <div class="level">Seviye ${q.level}</div>
- <h2>${q.q}</h2>
- <div class="options">
- ${q.o.map((x,idx)=>`
-  <label>
-   <input type="radio" name="opt" value="${idx}"> ${x}
-  </label>`).join("")}
- </div>
- </div>`;
+function update(){
+ document.getElementById("correct").innerText=correct;
+ document.getElementById("wrong").innerText=wrong;
+ const r=Math.round((correct/(correct+wrong))*100)||0;
+ document.getElementById("rate").innerText=r+"%";
+ buildReport(r);
 }
 
-btn.onclick = ()=>{
- const sel = document.querySelector("input[name='opt']:checked");
- if(!sel) return;
- if(+sel.value === questions[i].a) score++;
- i++;
- if(i<questions.length) load();
- else finish();
-};
-
-function finish(){
- const p = Math.round(score/questions.length*100);
+function buildReport(r){
+ const rep=document.getElementById("report");
+ rep.style.display="block";
  let msg="";
- if(p<30) msg="Temel risk farkındalığı zayıf. Kavramları yeniden çalış.";
- else if(p<55) msg="Teorik bilgi var, uygulama zayıf.";
- else if(p<75) msg="Uygulama yetkinliği iyi, kurumsal risk dili geliştirilmeli.";
- else if(p<90) msg="Senior seviye. Stratejik risk tarafına geçebilirsin.";
- else msg="Risk lideri bakış açısı. Mentorluk seviyesindesin.";
-
- quiz.innerHTML = `
- <div class="result">
- <h2>Skor: ${p}%</h2>
- <p>${msg}</p>
- </div>`;
- btn.style.display="none";
+ if(r<30) msg="Temel risk farkındalığın düşük. Kavramları tekrar çalış.";
+ else if(r<55) msg="Teori var ama uygulama zayıf.";
+ else if(r<75) msg="Uygulama iyi, kurumsal dil geliştirilmeli.";
+ else if(r<90) msg="Senior seviye. Stratejik risklere odaklan.";
+ else msg="Risk lideri bakış açısı.";
+ rep.innerHTML=`<h2>Kişisel Gelişim Yorumu</h2><p>${msg}</p>`;
 }
+
+function shuffle(){questions.sort(()=>Math.random()-0.5);render();}
+function resetAll(){correct=0;wrong=0;answered={};render();document.getElementById("report").style.display="none";}
+
+render();
 </script>
 
 </body>
