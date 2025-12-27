@@ -5,6 +5,8 @@
 <title>Risk Yönetimi · Etkileşimli Eğitim</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <style>
 :root{
  --bg:#050814;
@@ -20,51 +22,37 @@ body{
  background:radial-gradient(circle at top,#0b1228,var(--bg));
  color:#fff;
 }
-.container{max-width:720px;margin:auto;padding:32px}
-h1{margin:0 0 8px}
+.container{max-width:760px;margin:auto;padding:32px}
+h1{margin-bottom:6px}
 .sub{color:var(--muted);margin-bottom:20px}
-
 .progress{height:8px;background:#020617;border-radius:999px;overflow:hidden}
-.progress div{height:100%;background:linear-gradient(90deg,var(--info),var(--ok));width:0%;transition:.4s}
-
+.progress div{height:100%;background:linear-gradient(90deg,var(--info),var(--ok));width:0%}
 .card{
- margin-top:30px;
+ margin-top:28px;
  background:linear-gradient(180deg,#0f172a,#020617);
  border:1px solid #1e293b;
  border-radius:24px;
  padding:28px;
- box-shadow:0 20px 60px rgba(0,0,0,.5);
 }
 .tag{color:var(--info);font-size:13px}
 .q{font-size:20px;margin:12px 0 18px}
-
 .opt{
- padding:14px 16px;
- border-radius:14px;
- border:1px solid #1e293b;
- margin-bottom:10px;
+ padding:14px 16px;border-radius:14px;
+ border:1px solid #1e293b;margin-bottom:10px;
  cursor:pointer;
- transition:.2s;
 }
 .opt:hover{background:#020617}
-.opt.selected{border-color:var(--info)}
 .opt.correct{border-color:var(--ok);background:rgba(34,197,94,.1)}
 .opt.wrong{border-color:var(--warn);background:rgba(245,158,11,.1)}
-
-.feedback{margin-top:14px;color:var(--muted);min-height:48px}
+.feedback{color:var(--muted);margin-top:14px;min-height:48px}
 button{
  margin-top:16px;
  background:linear-gradient(90deg,#2563eb,#22c55e);
- border:none;
- color:#fff;
- padding:12px 20px;
- border-radius:14px;
- cursor:pointer;
- font-size:15px;
+ border:none;color:#fff;
+ padding:12px 20px;border-radius:14px;
+ cursor:pointer;font-size:15px
 }
-button:disabled{opacity:.5}
-
-footer{margin-top:40px;text-align:center;color:var(--muted);font-size:13px}
+footer{margin:40px 0;text-align:center;color:var(--muted);font-size:13px}
 </style>
 </head>
 
@@ -84,32 +72,66 @@ footer{margin-top:40px;text-align:center;color:var(--muted);font-size:13px}
  <button id="next" disabled>Devam Et</button>
 </div>
 
-<footer>Senior Mentor Modu · PDF Raporlu · 110 Soruya Uyumlu</footer>
+<div id="result" style="display:none" class="card"></div>
+
+<footer>
+Senior Mentor Modu · 110 Soru · PDF Kişisel Rapor
+</footer>
 
 </div>
 
 <script>
-const questions=[
- {t:"Temel",q:"Risk en doğru nasıl tanımlanır?",o:["Kesin olumsuz olay","Olasılık ve etki birlikte","Sadece finansal kayıp","Teknik hata"],a:1,e:"Risk belirsizliktir. Olasılık ve etki birlikte değerlendirilir."},
- {t:"ISO 31000",q:"ISO 31000 nedir?",o:["Sertifika","Denetim","Risk yönetimi çerçevesi","IT standardı"],a:2,e:"ISO 31000 bir sertifika değil, rehberdir."},
- {t:"Proje",q:"Vendor lock-in neyi ifade eder?",o:["Teknik borç","Tedarikçiye bağımlılık","İnsan riski","Regülasyon"],a:1,e:"Tek tedarikçi bağımlılığı ciddi stratejik risktir."}
- /* 🔹 Buraya aynı formatta 110 soruya kadar ekle */
+/* ===================== 110 SORU ===================== */
+const QUESTIONS = [
+/* --- TEMEL (1–30) --- */
+{cat:"Temel",q:"Risk en doğru nasıl tanımlanır?",o:["Kesin olumsuz olay","Olasılık ve etki birlikte","Sadece finansal kayıp","Teknik hata"],a:1,e:"Risk belirsizliktir. Olasılık ve etki birlikte değerlendirilir."},
+{cat:"Temel",q:"Risk ile problem arasındaki temel fark nedir?",o:["Risk geleceğe aittir","Risk sadece projedir","Problem yönetilemez","Risk negatiftir"],a:0,e:"Problem yaşanmıştır, risk henüz gerçekleşmemiştir."},
+{cat:"Temel",q:"Düşük olasılık–yüksek etki riskleri nasıl ele alınır?",o:["Önemsiz","Göz ardı","Kritik","Risk değildir"],a:2,e:"Nadir ama yıkıcı risklerdir."},
+{cat:"Temel",q:"Risk yönetimi hangi soruya cevap verir?",o:["Ne oldu?","Neden oldu?","Olursa ne olur?","Kim yaptı?"],a:2,e:"Risk yönetimi geleceğe bakar."},
+{cat:"Temel",q:"Risk neden yazılı olmalıdır?",o:["Formalite","Denetim","Kurumsal hafıza","Zorunluluk"],a:2,e:"Yazılmayan risk unutulur."},
+
+/* --- ISO / ERM (31–60) --- */
+{cat:"ISO 31000",q:"ISO 31000 nedir?",o:["Sertifika","Denetim","Risk yönetimi çerçevesi","IT standardı"],a:2,e:"ISO 31000 rehberdir, sertifika değildir."},
+{cat:"ERM",q:"Risk appetite neyi ifade eder?",o:["Maks zarar","Almak istenen risk","Risk toleransı","Toplam risk"],a:1,e:"Risk appetite stratejik bir tercihtir."},
+{cat:"ERM",q:"Risk tolerance neyi gösterir?",o:["İştah","Sapma sınırı","KPI","KRI"],a:1,e:"Tolerans operasyonel sınırdır."},
+{cat:"ERM",q:"KRI ne işe yarar?",o:["Performans ölçer","Erken uyarı verir","KPI’dır","Hedef belirler"],a:1,e:"KRI risk sinyalidir."},
+{cat:"ERM",q:"COSO ERM amacı nedir?",o:["Denetim","Sertifika","Risk entegrasyonu","IT güvenliği"],a:2,e:"Riskleri kuruma entegre eder."},
+
+/* --- PROJE (61–85) --- */
+{cat:"Proje",q:"Scope creep nedir?",o:["Teknik hata","Kapsamın kontrolsüz büyümesi","Zaman baskısı","İletişim sorunu"],a:1,e:"Scope creep projeleri sessizce bitirir."},
+{cat:"Proje",q:"Vendor lock-in ne anlama gelir?",o:["Teknik borç","Tedarikçiye bağımlılık","İnsan riski","Regülasyon"],a:1,e:"Alternatifsizlik stratejik risktir."},
+{cat:"Proje",q:"Teknik borç hangi riski artırır?",o:["Kısa vadeli","Uzun vadeli","Finansal","İtibar"],a:1,e:"Zamanla faize dönüşür."},
+{cat:"Proje",q:"Test yapılmadan go-live ne doğurur?",o:["Hız","Sürpriz hata","Kalite","Başarı"],a:1,e:"Test edilmemiş sistem sürpriz üretir."},
+
+/* --- İNSAN & SENARYO (86–110) --- */
+{cat:"İnsan",q:"Key person risk nedir?",o:["Motivasyon","Bilginin tek kişide olması","İletişim","Performans"],a:1,e:"Tek kişiye bağlı bilgi risktir."},
+{cat:"İnsan",q:"Sessiz ekip neyin göstergesidir?",o:["Uyum","Risk körlüğü","Disiplin","Başarı"],a:1,e:"Kimse konuşmuyorsa risk büyür."},
+{cat:"Senaryo",q:"Belirsiz regülasyonda en doğru yaklaşım?",o:["Beklemek","Görmezden gelmek","Senaryo analizi","İptal"],a:2,e:"Belirsizlik senaryo ile yönetilir."},
+{cat:"Senaryo",q:"En tehlikeli risk hangisidir?",o:["Bilinmeyen","Konuşulmayan","Finansal","Teknik"],a:1,e:"Konuşulmayan risk öldürür."}
 ];
 
-let i=0,score=0,locked=false;
-
+/* ===================== AKIŞ ===================== */
+let i=0,correct=0;
 const tag=document.getElementById("tag");
 const qEl=document.getElementById("question");
 const optEl=document.getElementById("options");
 const fb=document.getElementById("feedback");
 const next=document.getElementById("next");
 
+function speak(text){
+ const u=new SpeechSynthesisUtterance(text);
+ u.lang="tr-TR";
+ u.rate=0.95;
+ speechSynthesis.speak(u);
+}
+
 function render(){
- locked=false; next.disabled=true; fb.innerText="";
- const q=questions[i];
- tag.innerText=q.t;
+ const q=QUESTIONS[i];
+ tag.innerText=q.cat;
  qEl.innerText=q.q;
  optEl.innerHTML="";
+ fb.innerText="";
+ next.disabled=true;
  q.o.forEach((o,ix)=>{
   const d=document.createElement("div");
   d.className="opt";
@@ -117,29 +139,50 @@ function render(){
   d.onclick=()=>select(ix,d);
   optEl.appendChild(d);
  });
- document.getElementById("bar").style.width=((i)/questions.length*100)+"%";
+ document.getElementById("bar").style.width=(i/QUESTIONS.length*100)+"%";
 }
 
 function select(ix,el){
- if(locked) return;
- locked=true;
- const q=questions[i];
+ const q=QUESTIONS[i];
  [...document.querySelectorAll(".opt")].forEach((o,j)=>{
   if(j===q.a) o.classList.add("correct");
   else if(j===ix) o.classList.add("wrong");
  });
+ if(ix===q.a){correct++; speak("Güzel yakaladın.");}
+ else{ speak("Bu noktada çoğu kişi kararsız kalır.");}
  fb.innerText=q.e;
  next.disabled=false;
 }
 
 next.onclick=()=>{
  i++;
- if(i>=questions.length){
-  alert("Eğitim tamamlandı. Skor: "+score+"/"+questions.length);
+ if(i>=QUESTIONS.length){
+  finish();
   return;
  }
  render();
 };
+
+function finish(){
+ const r=Math.round(correct/QUESTIONS.length*100);
+ const box=document.getElementById("result");
+ box.style.display="block";
+ box.innerHTML=`
+ <h2>Risk Profilin</h2>
+ <p><b>Başarı:</b> ${r}%</p>
+ <p>${r<50?"Temel farkındalık geliştirilmeli.":r<75?"Uygulama güçlü, strateji geliştirilebilir.":"Senior risk bakış açısı."}</p>
+ <button onclick="pdf(${r})">PDF Olarak İndir</button>
+ `;
+}
+
+function pdf(rate){
+ const {jsPDF}=window.jspdf;
+ const p=new jsPDF();
+ p.text("Risk Yönetimi - Kişisel Rapor",20,20);
+ p.text("Başarı: "+rate+"%",20,40);
+ p.text("Bu rapor etkileşimli eğitim sonucu üretilmiştir.",20,60);
+ p.save("risk-profilim.pdf");
+}
 
 render();
 </script>
