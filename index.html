@@ -1,0 +1,833 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Risk Yönetimi | Soru-Cevap Eğitim (Etkileşimli)</title>
+<style>
+:root{
+  --bg:#050816;
+  --panel:rgba(255,255,255,.06);
+  --border:rgba(255,255,255,.12);
+  --text:#e7e9ee;
+  --muted:#aab0bd;
+  --accent:#38bdf8;
+  --good:#22c55e;
+  --bad:#ef4444;
+}
+*{box-sizing:border-box;font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif}
+body{margin:0;background:radial-gradient(1200px 600px at 20% 10%, rgba(56,189,248,.18), transparent 55%),
+radial-gradient(900px 500px at 80% 20%, rgba(34,197,94,.14), transparent 55%),
+linear-gradient(160deg,#020617,#050816 60%,#020617);color:var(--text);}
+header{position:sticky;top:0;z-index:10;backdrop-filter:blur(10px);
+background:rgba(2,6,23,.6);border-bottom:1px solid var(--border);}
+.wrap{max-width:1180px;margin:0 auto;padding:14px 18px;display:flex;gap:16px;align-items:center;justify-content:space-between;}
+.brand{display:flex;align-items:center;gap:12px}
+.avatar{width:44px;height:44px;border-radius:12px;overflow:hidden;border:1px solid var(--border);background:rgba(255,255,255,.08);}
+.avatar img{width:100%;height:100%;object-fit:cover;display:block}
+h1{font-size:16px;margin:0;font-weight:700;letter-spacing:.2px}
+.sub{font-size:12px;color:var(--muted)}
+.stats{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.pill{font-size:12px;color:var(--muted);padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.04);}
+main{max-width:1180px;margin:0 auto;padding:18px 18px 60px;}
+.topbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin:14px 0 18px}
+.controls{display:flex;gap:10px;flex-wrap:wrap}
+input[type="search"]{width:min(520px,100%);padding:12px 12px;border-radius:12px;
+border:1px solid var(--border);background:rgba(2,6,23,.55);color:var(--text);}
+.btn{padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:rgba(2,6,23,.55);
+color:var(--text);cursor:pointer}
+.btn:hover{opacity:.92}
+.btn.primary{background:linear-gradient(90deg,#0284c7,#22c55e);border:none}
+.btn.ghost{background:rgba(255,255,255,.04)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:980px){.grid{grid-template-columns:1fr}}
+.card{padding:16px;border-radius:16px;background:var(--panel);border:1px solid var(--border)}
+.qrow{display:flex;gap:12px;align-items:flex-start}
+.qnum{min-width:46px;height:28px;border-radius:999px;display:flex;align-items:center;justify-content:center;
+background:rgba(56,189,248,.16);border:1px solid rgba(56,189,248,.35);color:#7dd3fc;font-weight:700;font-size:12px}
+.qtext{font-size:16px;line-height:1.45}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.answer{display:none;margin-top:12px;padding:12px;border-radius:14px;
+background:rgba(255,255,255,.04);border:1px dashed rgba(255,255,255,.18);color:#d8dbe3;line-height:1.55}
+.answer.show{display:block}
+.badge{font-size:12px;padding:4px 8px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.03);color:var(--muted)}
+.small{font-size:12px;color:var(--muted);line-height:1.5}
+.footer{margin-top:18px;color:var(--muted);font-size:12px;line-height:1.5}
+kbd{background:#020617;border:1px solid rgba(255,255,255,.2);border-radius:6px;padding:2px 6px;font-size:12px}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="brand">
+      <div class="avatar" title="Anlatan kişi (fotoğrafı değiştirilebilir)">
+        <img src="avatar.jpg" alt="Anlatan kişi"/>
+      </div>
+      <div>
+        <h1>Risk Yönetimi · Soru-Cevap Eğitim</h1>
+        <div class="sub">Kullanım: Soruyu oku → cevabı sesli anlat → “Cevabı Göster” ile kontrol et. Kısayol: <kbd>J</kbd>/<kbd>K</kbd> gezin, <kbd>A</kbd> cevap aç/kapat.</div>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="pill">Toplam Soru: <b id="total">50</b></div>
+      <div class="pill">✅ Doğru: <b id="cok">0</b></div>
+      <div class="pill">❌ Yanlış: <b id="wok">0</b></div>
+      <div class="pill">İlerleme: <b id="prog">0%</b></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="topbar">
+    <input id="search" type="search" placeholder="Ara: örn. risk appetite, KRI, residual, COSO..." oninput="filterCards()"/>
+    <div class="controls">
+      <button class="btn primary" onclick="toggleAll(true)">Tüm Cevapları Aç</button>
+      <button class="btn" onclick="toggleAll(false)">Tüm Cevapları Kapat</button>
+      <button class="btn" onclick="shuffle()">Karıştır</button>
+      <button class="btn" onclick="resetScore()">Skoru Sıfırla</button>
+    </div>
+  </div>
+
+  <div class="small">
+    <span class="badge">Eğitim Modu</span> Her soruya önce kendi cümlelerinle cevap ver. Sonra cevabı açıp 1) eksiklerini gör 2) doğru/yanlış işaretle.
+    <br/>
+    <span class="badge">Fotoğraf</span> Bu dosyanın yanına <b>avatar.jpg</b> koyarsan (kendi fotoğrafın), üstte otomatik görünür.
+  </div>
+
+  <div id="grid" class="grid">
+    
+    <div class="card" data-i="1">
+      <div class="qrow">
+        <div class="qnum">S01</div>
+        <div class="qtext">Risk nedir?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(1)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(1)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(1)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a1">Risk, bir olayın gerçekleşme olasılığı ile gerçekleştiğinde yaratacağı etkinin birlikte değerlendirilmesidir. (Olasılık × Etki)</div>
+    </div>
+    
+    <div class="card" data-i="2">
+      <div class="qrow">
+        <div class="qnum">S02</div>
+        <div class="qtext">ISO 31000 ne sağlar?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(2)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(2)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(2)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a2">ISO 31000, risk yönetimi için prensipler, bir çerçeve (framework) ve bir süreç (process) sunar; her ölçekte ve sektördeki kurumlara uygulanabilir.</div>
+    </div>
+    
+    <div class="card" data-i="3">
+      <div class="qrow">
+        <div class="qnum">S03</div>
+        <div class="qtext">ISO 31000’de risk yönetiminin amacı nedir?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(3)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(3)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(3)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a3">Kurumsal hedeflere ulaşma olasılığını artırmak, fırsat/tehditleri daha iyi tanımlamak ve kaynakları risk iştahına uygun şekilde tahsis etmektir.</div>
+    </div>
+    
+    <div class="card" data-i="4">
+      <div class="qrow">
+        <div class="qnum">S04</div>
+        <div class="qtext">Risk iştahı (risk appetite) nedir?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(4)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(4)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(4)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a4">Kurumun hedeflerine giderken kabul etmeye istekli olduğu toplam risk düzeyidir. Stratejik bir tercihtir.</div>
+    </div>
+    
+    <div class="card" data-i="5">
+      <div class="qrow">
+        <div class="qnum">S05</div>
+        <div class="qtext">Risk toleransı nedir?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(5)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(5)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(5)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a5">Belirli bir hedef veya risk kategorisi için kabul edilebilir sapma aralığıdır. İştahı operasyona çeviren sınırları tanımlar.</div>
+    </div>
+    
+    <div class="card" data-i="6">
+      <div class="qrow">
+        <div class="qnum">S06</div>
+        <div class="qtext">İçsel (inherent) risk nedir?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(6)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(6)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(6)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a6">Herhangi bir kontrol/iyileştirme uygulanmadan önce riskin doğal seviyesidir.</div>
+    </div>
+    
+    <div class="card" data-i="7">
+      <div class="qrow">
+        <div class="qnum">S07</div>
+        <div class="qtext">Kalan (residual) risk nedir?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(7)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(7)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(7)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a7">Kontroller ve risk yanıtları uygulandıktan sonra geriye kalan risk seviyesidir.</div>
+    </div>
+    
+    <div class="card" data-i="8">
+      <div class="qrow">
+        <div class="qnum">S08</div>
+        <div class="qtext">Risk kaydı (risk register) nedir?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(8)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(8)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(8)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a8">Risklerin; tanım, kategori, sahip, neden, olasılık/etki, skor, yanıt planı, tarih, durum ve kanıtlarıyla tutulduğu yaşayan envanterdir.</div>
+    </div>
+    
+    <div class="card" data-i="9">
+      <div class="qrow">
+        <div class="qnum">S09</div>
+        <div class="qtext">KRI nedir?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(9)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(9)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(9)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a9">Key Risk Indicator: Riski erken haber veren ölçülebilir göstergedir; eşik aşımlarında aksiyon tetikler.</div>
+    </div>
+    
+    <div class="card" data-i="10">
+      <div class="qrow">
+        <div class="qnum">S10</div>
+        <div class="qtext">KPI ile KRI farkı nedir?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(10)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(10)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(10)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a10">KPI performansı ölçer; KRI ise riskin yükseldiğini gösterir. KPI ‘hedefe gidiyor muyuz?’, KRI ‘yoldan çıkıyor muyuz?’ sorusunu yanıtlar.</div>
+    </div>
+    
+    <div class="card" data-i="11">
+      <div class="qrow">
+        <div class="qnum">S11</div>
+        <div class="qtext">Risk değerlendirmesinin tipik bileşenleri nelerdir?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(11)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(11)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(11)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a11">Tehdit, zafiyet, olasılık, etki ve bağlamsal koşullar (predisposing conditions) gibi faktörler.</div>
+    </div>
+    
+    <div class="card" data-i="12">
+      <div class="qrow">
+        <div class="qnum">S12</div>
+        <div class="qtext">NIST SP 800-30’a göre risk değerlendirmesi niye yapılır?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(12)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(12)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(12)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a12">Üst yönetime uygun aksiyonları seçtirecek bilgiyi üretmek için; risk değerlendirmesi genel risk yönetimi sürecinin parçasıdır.</div>
+    </div>
+    
+    <div class="card" data-i="13">
+      <div class="qrow">
+        <div class="qnum">S13</div>
+        <div class="qtext">COSO ERM 2017’nin 5 bileşeni nedir?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(13)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(13)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(13)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a13">Governance &amp; Culture; Strategy &amp; Objective-Setting; Performance; Review &amp; Revision; Information, Communication &amp; Reporting.</div>
+    </div>
+    
+    <div class="card" data-i="14">
+      <div class="qrow">
+        <div class="qnum">S14</div>
+        <div class="qtext">Risk sahibi (owner) kimdir?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(14)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(14)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(14)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a14">Riski ‘yok eden’ değil; riskin görünür, güncel ve aksiyonda kalmasını sağlayan, takibinden sorumlu kişidir.</div>
+    </div>
+    
+    <div class="card" data-i="15">
+      <div class="qrow">
+        <div class="qnum">S15</div>
+        <div class="qtext">‘Sessiz risk’ ne demek?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(15)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(15)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(15)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a15">Konuşulmayan, kayıt altına alınmayan ve bu yüzden büyüyen risktir. Erken uyarı sinyali oluşmaz.</div>
+    </div>
+    
+    <div class="card" data-i="16">
+      <div class="qrow">
+        <div class="qnum">S16</div>
+        <div class="qtext">En etkili risk yanıt seçenekleri nelerdir?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(16)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(16)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(16)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a16">Kaçın (avoid), azalt (mitigate), paylaş/transfer et (share/transfer), kabul et (accept).</div>
+    </div>
+    
+    <div class="card" data-i="17">
+      <div class="qrow">
+        <div class="qnum">S17</div>
+        <div class="qtext">Kontrol (control) ile risk yanıtı farkı nedir?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(17)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(17)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(17)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a17">Kontroller riski düşüren mekanizmalardır; risk yanıtı ise stratejik tercihtir (ör. kaçınma/transfer). Kontrol, yanıtın uygulanma aracıdır.</div>
+    </div>
+    
+    <div class="card" data-i="18">
+      <div class="qrow">
+        <div class="qnum">S18</div>
+        <div class="qtext">Riskleri önceliklendirmek için en pratik yöntem?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(18)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(18)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(18)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a18">Olasılık-etki matrisi ile skorlamak; sonra risk iştahı/toleransına göre ‘kabul/aksiyon’ kararını vermek.</div>
+    </div>
+    
+    <div class="card" data-i="19">
+      <div class="qrow">
+        <div class="qnum">S19</div>
+        <div class="qtext">Risk iletişimi neden kritiktir?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(19)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(19)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(19)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a19">Çünkü risk yönetimi karar işidir; doğru kişi doğru zamanda doğru bilgiyi almazsa, risk ‘yönetilemez’ olur.</div>
+    </div>
+    
+    <div class="card" data-i="20">
+      <div class="qrow">
+        <div class="qnum">S20</div>
+        <div class="qtext">Üç Hat Modeli (Three Lines Model) ne anlatır?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(20)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(20)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(20)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a20">1. hat operasyon/iş birimleri; 2. hat risk &amp; uyum; 3. hat iç denetim: rol ve sorumluluk ayrımıyla güvence sağlar.</div>
+    </div>
+    
+    <div class="card" data-i="21">
+      <div class="qrow">
+        <div class="qnum">S21</div>
+        <div class="qtext">Pre-mortem tekniği nedir?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(21)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(21)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(21)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a21">Proje ‘başarısız oldu’ varsayımıyla geriye dönük düşünerek başarısızlık nedenlerini önceden bulup önlem üretme yöntemidir.</div>
+    </div>
+    
+    <div class="card" data-i="22">
+      <div class="qrow">
+        <div class="qnum">S22</div>
+        <div class="qtext">Risk skorunu nasıl standardize edersin?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(22)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(22)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(22)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a22">Kurumsal tanımlı olasılık (1–5) ve etki (1–5) tanımları; net örnekler; aynı skor = aynı anlam prensibi.</div>
+    </div>
+    
+    <div class="card" data-i="23">
+      <div class="qrow">
+        <div class="qnum">S23</div>
+        <div class="qtext">Risk ‘tetikleyici’ (trigger) nedir?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(23)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(23)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(23)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a23">Riskin yükseldiğini veya gerçekleşmek üzere olduğunu gösteren olay/koşul; KRI eşik aşımı da tetikleyici sayılabilir.</div>
+    </div>
+    
+    <div class="card" data-i="24">
+      <div class="qrow">
+        <div class="qnum">S24</div>
+        <div class="qtext">Risk ile issue (problem) farkı nedir?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(24)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(24)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(24)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a24">Risk gelecekte olabilir; issue gerçekleşmiştir ve çözüm planı gerektirir.</div>
+    </div>
+    
+    <div class="card" data-i="25">
+      <div class="qrow">
+        <div class="qnum">S25</div>
+        <div class="qtext">Regüle sektörlerde en sık atlanan risk alanı?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(25)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(25)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(25)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a25">Üçüncü parti/outsourcing riskleri: SLA, veri güvenliği, iş sürekliliği ve zincirleme etki.</div>
+    </div>
+    
+    <div class="card" data-i="26">
+      <div class="qrow">
+        <div class="qnum">S26</div>
+        <div class="qtext">Risk iştahını stratejiye nasıl bağlarsın?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(26)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(26)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(26)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a26">Stratejik hedef bazında toleranslar, limitler ve karar kuralları tanımlayarak; yatırım/ürün kararlarında bu limitleri ‘gating’ olarak kullanarak.</div>
+    </div>
+    
+    <div class="card" data-i="27">
+      <div class="qrow">
+        <div class="qnum">S27</div>
+        <div class="qtext">‘Riski kabul etmek’ ne zaman mantıklıdır?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(27)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(27)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(27)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a27">Etki düşükse, maliyet/efor risk azaltımından daha yüksekse veya risk iştahı içinde kalıyorsa; ama mutlaka izleme ve tetikleyici tanımlanır.</div>
+    </div>
+    
+    <div class="card" data-i="28">
+      <div class="qrow">
+        <div class="qnum">S28</div>
+        <div class="qtext">Risk transferi örneği?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(28)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(28)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(28)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a28">Sigorta, sözleşmesel sorumluluk devri, outsource ile belirli risklerin paylaşılması; ancak ‘sorumluluk’ tamamen devredilmez.</div>
+    </div>
+    
+    <div class="card" data-i="29">
+      <div class="qrow">
+        <div class="qnum">S29</div>
+        <div class="qtext">Risk azaltım planı iyi ise hangi özellikleri taşır?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(29)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(29)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(29)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a29">Net aksiyonlar, sorumlu, tarih, ölçüm (KRI/KPI), kanıt ve ‘kalan risk’ hedefi.</div>
+    </div>
+    
+    <div class="card" data-i="30">
+      <div class="qrow">
+        <div class="qnum">S30</div>
+        <div class="qtext">Risk komitesi toplantısında en kritik çıktı nedir?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(30)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(30)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(30)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a30">‘Karar’: Hangi riskler kabul, hangileri aksiyonda, hangileri escalated; ayrıca kararın sahipleri ve tarihleri.</div>
+    </div>
+    
+    <div class="card" data-i="31">
+      <div class="qrow">
+        <div class="qnum">S31</div>
+        <div class="qtext">‘Zincirleme etki’ neden önemlidir?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(31)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(31)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(31)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a31">Bir riskin birden fazla süreç/kanalı etkileyerek büyümesidir; özellikle entegrasyonlu yapılarda küçük arıza büyük itibar/finans etkisine dönüşür.</div>
+    </div>
+    
+    <div class="card" data-i="32">
+      <div class="qrow">
+        <div class="qnum">S32</div>
+        <div class="qtext">Bir riski ‘görünür’ yapmak için minimum set nedir?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(32)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(32)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(32)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a32">Risk tanımı + neden + olasılık/etki + sahip + yanıt + izleme (KRI) + tarih.</div>
+    </div>
+    
+    <div class="card" data-i="33">
+      <div class="qrow">
+        <div class="qnum">S33</div>
+        <div class="qtext">Kriz yönetimi ile risk yönetimi ilişkisi?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(33)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(33)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(33)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a33">Risk yönetimi, kriz gelmeden hazırlık sağlar; kriz yönetimi ise gerçekleşen olayın koordineli yönetimidir.</div>
+    </div>
+    
+    <div class="card" data-i="34">
+      <div class="qrow">
+        <div class="qnum">S34</div>
+        <div class="qtext">‘Kontrol tasarımı’ ile ‘kontrol etkinliği’ farkı?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(34)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(34)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(34)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a34">Tasarım: doğru kontrol var mı? Etkinlik: çalışıyor mu? Denetim ve testlerle ölçülür.</div>
+    </div>
+    
+    <div class="card" data-i="35">
+      <div class="qrow">
+        <div class="qnum">S35</div>
+        <div class="qtext">Risk kültürü nasıl ölçülür?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(35)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(35)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(35)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a35">Konuşulabilirlik (speak-up), raporlama hızı, near-miss bildirimleri, kontrol uyumu, eğitim katılımı ve tekrar eden olayların azalması.</div>
+    </div>
+    
+    <div class="card" data-i="36">
+      <div class="qrow">
+        <div class="qnum">S36</div>
+        <div class="qtext">Near-miss nedir?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(36)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(36)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(36)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a36">Hasar oluşmadan atlatılan olay; en değerli öğrenme kaynağıdır, çünkü ‘bedelsiz uyarı’ verir.</div>
+    </div>
+    
+    <div class="card" data-i="37">
+      <div class="qrow">
+        <div class="qnum">S37</div>
+        <div class="qtext">Örnek KRI: Operasyonel</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(37)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(37)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(37)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a37">Aylık işlem hatası oranı; kritik hata sayısı; SLA ihlalleri; geri dönüş sayısı.</div>
+    </div>
+    
+    <div class="card" data-i="38">
+      <div class="qrow">
+        <div class="qnum">S38</div>
+        <div class="qtext">Örnek KRI: Siber/BT</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(38)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(38)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(38)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a38">Başarısız login oranı; kritik açık sayısı; yama gecikmesi; olağandışı trafik artışı.</div>
+    </div>
+    
+    <div class="card" data-i="39">
+      <div class="qrow">
+        <div class="qnum">S39</div>
+        <div class="qtext">Örnek KRI: Üçüncü Parti</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(39)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(39)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(39)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a39">SLA tutmayan vendor sayısı; geciken teslimat oranı; kritik incident tekrar oranı.</div>
+    </div>
+    
+    <div class="card" data-i="40">
+      <div class="qrow">
+        <div class="qnum">S40</div>
+        <div class="qtext">Risk iştahı cümlesi örneği?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(40)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(40)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(40)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a40">‘Müşteri fonlarının güvenliği ve regülasyon uyumunda düşük risk iştahı; büyüme ve ürün inovasyonunda orta risk iştahı.’</div>
+    </div>
+    
+    <div class="card" data-i="41">
+      <div class="qrow">
+        <div class="qnum">S41</div>
+        <div class="qtext">Risk matrisi tek başına yeter mi?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(41)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(41)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(41)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a41">Hayır. Bağlam, senaryo, hız (time-to-impact), tespit edilebilirlik ve korelasyon gibi boyutlar da önemlidir.</div>
+    </div>
+    
+    <div class="card" data-i="42">
+      <div class="qrow">
+        <div class="qnum">S42</div>
+        <div class="qtext">Risk değerlendirmesinde ‘hız’ (velocity) nedir?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(42)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(42)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(42)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a42">Risk gerçekleştiğinde etkinin ne kadar hızlı ortaya çıktığı. Hız yüksekse hazırlık ve otomasyon önceliklidir.</div>
+    </div>
+    
+    <div class="card" data-i="43">
+      <div class="qrow">
+        <div class="qnum">S43</div>
+        <div class="qtext">Risk azaltımında ‘önce kullanıcı deneyimi’ niye kritik?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(43)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(43)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(43)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a43">Çünkü kullanıcıya yaşatılan belirsizlik itibar riskini büyütür; net mesaj ve alternatif akış çoğu zaman en hızlı mitigasyondur.</div>
+    </div>
+    
+    <div class="card" data-i="44">
+      <div class="qrow">
+        <div class="qnum">S44</div>
+        <div class="qtext">En iyi risk toplantısı kaç sayfa olmalı?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(44)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(44)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(44)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a44">Yönetici için 1 sayfa özet + eklerde detay. Ana hedef karar aldırmaktır.</div>
+    </div>
+    
+    <div class="card" data-i="45">
+      <div class="qrow">
+        <div class="qnum">S45</div>
+        <div class="qtext">Risk yönetiminde en sık KPI tuzağı?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(45)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(45)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(45)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a45">Sadece hedef tutturmaya odaklanıp risk sinyallerini kaçırmak; KPI iyi görünürken KRI yükseliyor olabilir.</div>
+    </div>
+    
+    <div class="card" data-i="46">
+      <div class="qrow">
+        <div class="qnum">S46</div>
+        <div class="qtext">Risk değerlendirmesinde ‘tehdit’ ve ‘zafiyet’ nasıl ayrılır?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(46)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(46)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(46)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a46">Tehdit: saldırı/olay kaynağı. Zafiyet: tehdidin kullanabileceği açıklık. Risk, ikisinin kesişiminden doğar.</div>
+    </div>
+    
+    <div class="card" data-i="47">
+      <div class="qrow">
+        <div class="qnum">S47</div>
+        <div class="qtext">Risk iştahını operasyona nasıl indirirsin?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(47)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(47)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(47)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a47">Limitler, onay eşikleri, otomatik kontroller, ‘stop/go’ kuralları, dashboard ve escalations ile.</div>
+    </div>
+    
+    <div class="card" data-i="48">
+      <div class="qrow">
+        <div class="qnum">S48</div>
+        <div class="qtext">En kritik dokümanlar hangileri?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(48)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(48)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(48)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a48">Risk register, risk appetite statement, kontrol kataloğu, test/denetim sonuçları, incident &amp; near-miss kayıtları.</div>
+    </div>
+    
+    <div class="card" data-i="49">
+      <div class="qrow">
+        <div class="qnum">S49</div>
+        <div class="qtext">Yeni bir projede risk yönetimine ne zaman başlanır?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(49)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(49)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(49)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a49">En başta. Discovery ve tasarım aşamasında riskleri görmek maliyeti düşürür.</div>
+    </div>
+    
+    <div class="card" data-i="50">
+      <div class="qrow">
+        <div class="qnum">S50</div>
+        <div class="qtext">‘Riske dayalı önceliklendirme’ nasıl yapılır?</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="reveal(50)">Cevabı Göster</button>
+        <button class="btn ghost" onclick="markCorrect(50)">✅ Doğru Bildim</button>
+        <button class="btn ghost" onclick="markWrong(50)">❌ Yanlış Bildim</button>
+      </div>
+      <div class="answer" id="a50">En yüksek risk skoruna değil; risk iştahı dışına çıkan, hızı yüksek ve tespit edilemeyen risklere öncelik verilir.</div>
+    </div>
+    
+  </div>
+
+  <div class="footer">
+    Not: Bu içerik, ISO 31000’un “prensipler + çerçeve + süreç” yaklaşımı ve COSO ERM’nin 5 bileşenli yapısı gibi yaygın referanslarla uyumludur.
+    Bilgi güvenliği özelinde NIST SP 800-30 risk değerlendirmesi yaklaşımı (tehdit, zafiyet, olasılık, etki) çerçevesiyle de paraleldir.
+  </div>
+</main>
+
+<script>
+let correct=0, wrong=0;
+const total = 50;
+
+function pct(){
+  const done = correct+wrong;
+  const p = total ? Math.round((done/total)*100) : 0;
+  document.getElementById('cok').innerText = correct;
+  document.getElementById('wok').innerText = wrong;
+  document.getElementById('prog').innerText = p + '%';
+}
+pct();
+
+function reveal(i){
+  const el = document.getElementById('a'+i);
+  el.classList.toggle('show');
+}
+
+function markCorrect(i){ correct++; pct(); flash(i, true); }
+function markWrong(i){ wrong++; pct(); flash(i, false); }
+
+function flash(i, good){
+  const card = document.querySelector('.card[data-i="'+i+'"]');
+  card.style.borderColor = good ? 'rgba(34,197,94,.65)' : 'rgba(239,68,68,.65)';
+  setTimeout(()=> card.style.borderColor = 'var(--border)', 900);
+}
+
+function toggleAll(open){
+  document.querySelectorAll('.answer').forEach(a=>{
+    if(open) a.classList.add('show'); else a.classList.remove('show');
+  });
+}
+
+function filterCards(){
+  const q = document.getElementById('search').value.toLowerCase().trim();
+  document.querySelectorAll('.card').forEach(c=>{
+    const text = c.innerText.toLowerCase();
+    c.style.display = text.includes(q) ? '' : 'none';
+  });
+}
+
+function shuffle(){
+  const grid = document.getElementById('grid');
+  const cards = Array.from(grid.children);
+  for (let i = cards.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [cards[i], cards[j]] = [cards[j], cards[i]];
+  }
+  cards.forEach(c=>grid.appendChild(c));
+}
+
+function resetScore(){ correct=0; wrong=0; pct(); }
+
+// Keyboard training: J/K to navigate visible cards, A to toggle answer
+let cur = 0;
+function visibleCards(){ return Array.from(document.querySelectorAll('.card')).filter(c=>c.style.display!=='none'); }
+function focusCard(i){
+  const v = visibleCards();
+  if(!v.length) return;
+  cur = Math.max(0, Math.min(i, v.length-1));
+  v[cur].scrollIntoView({behavior:'smooth', block:'center'});
+  v[cur].style.boxShadow = '0 0 0 2px rgba(56,189,248,.35), 0 20px 60px rgba(0,0,0,.35)';
+  setTimeout(()=> v[cur].style.boxShadow = '', 900);
+}
+document.addEventListener('keydown', (e)=>{
+  if(e.key.toLowerCase()==='j') focusCard(cur+1);
+  if(e.key.toLowerCase()==='k') focusCard(cur-1);
+  if(e.key.toLowerCase()==='a') {
+    const v = visibleCards();
+    if(!v.length) return;
+    const i = v[cur].getAttribute('data-i');
+    reveal(i);
+  }
+});
+</script>
+</body>
+</html>
